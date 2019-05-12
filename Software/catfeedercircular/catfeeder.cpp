@@ -70,6 +70,15 @@ int CatFeederClass::AdvanceSlot() {
 // get the status of the CatFeeder (sys_cal.html)
 String CatFeederClass::Calibrate_Start(AsyncWebServerRequest *request) {
 
+
+    // TODO
+    // fixed for the auger version
+   
+    this->_motor_moveto(1,2);
+
+    //
+    // continue ...
+
     this->offset = 0;
     this->position = 1; // first slot
 
@@ -530,6 +539,21 @@ bool CatFeederClass::RunBot() {
 
 void CatFeederClass::_motor_moveto(int a, int b) {
 
+    //
+    // fix for operate the auger. Just do a number of fixed revolutions
+    //
+    
+    int spin = 0;
+    int revs = 1;
+    DEBUGLOG("CatFeederClass::Test_MoveTo (Auger): revs: %d spin:%s\n", revs, ( spin == 1 ? "clockwise": "anticlockwise" ));
+    schedule_function(std::bind(MotorStepperClass::OneRevolution, spin, revs, _motor));
+    return;
+
+    //
+    //
+    // not reached, old version
+
+
     int dir = 1;
     int distance = 0;
     int steps = 0;
@@ -557,7 +581,7 @@ void CatFeederClass::_motor_moveto(int a, int b) {
     // move the motor n steps remember that we have configured the motor
     // by default as half step, so we have to command two moves.
 
-    DEBUGLOG("CatFeederClass::Test_MoveTo: %d->%d a:%d, d:%d s:%d, dr:%s\n", a,b, angle, distance, steps, ( dir == 1 ? "clockwise": "anticlockwise" ));
+    DEBUGLOG("CatFeederClass::_motor_moveto: %d->%d a:%d, d:%d s:%d, dr:%s\n", a,b, angle, distance, steps, ( dir == 1 ? "clockwise": "anticlockwise" ));
     schedule_function(std::bind(MotorStepperClass::Move, dir, steps, _motor));
 
     /*

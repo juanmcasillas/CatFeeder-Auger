@@ -31,6 +31,7 @@ void setup() {
     SPIFFS.begin();
     CATFEEDER.begin(&SPIFFS);
 
+    randomSeed(analogRead(0));
     // configure custom handlers first
     
     ESPHTTPServer.set_usercallbackfilter("/catfeeder");
