@@ -49,9 +49,9 @@ void MotorStepperClass::Move(int spin, int steps, MotorStepperClass *motor) {
   }
 }
 
+
+
 void MotorStepperClass::MoveWithBack(int spin, int steps, MotorStepperClass *motor) {
-  
-  // JMC TODO
   
   int gap = 10 + random(10,20+1);
 
@@ -83,11 +83,89 @@ void MotorStepperClass::OneRevolution(int spin, int revs, MotorStepperClass *mot
   MotorStepperClass::MoveWithBack(spin, steps, motor);
 }
 
+
+// implement some kind of jitter to avoid jamming.
+
+void MotorStepperClass::MoveWithJitter(int spin, int steps, MotorStepperClass *motor) {
+  
+  int steps_one_revolution = static_cast<int>(ceil( (motor->stepsPerRev/(motor->numSteps/2.0)) * 1.0));
+  int steps_per_degree = static_cast<int>(ceil(steps_one_revolution / 360.0)); 
+
+  int MIN_DEGREE = 15;
+  int MAX_DEGREE = 35;
+
+  // motivation, go a little back, then walk, then go a little back again.
+
+  int back_degrees = 2;
+
+
+  for (int j=0; j<10; j++) {
+    // first, go back a little
+
+    for (int i=0; i< steps_per_degree * back_degrees; i++) {
+      if (spin == 1) motor->Anticlockwise();
+      else motor->Clockwise();
+    }
+
+    // return to the first position
+
+    for (int i=0; i< steps_per_degree * back_degrees; i++) {
+      if (spin == 1) motor->Clockwise();
+      else motor->Anticlockwise();
+    }
+  }
+
+  // do the jitter. use back_degress to gap.
+
+
+
+  int i=0;
+  while (i< steps) {
+
+   
+    //if (i % (back_degrees*steps_per_degree) == 0) {
+    if (random(0, 100) < 25) { 
+
+      // ok, go back for some angles, then return, and move forward.
+
+      int back_jitter = random(MIN_DEGREE,MAX_DEGREE+1);
+  
+
+      for (int j=0; j< steps_per_degree * back_jitter; j++) {
+        if (spin == 1) motor->Anticlockwise();
+        else motor->Clockwise();
+      }
+
+      // return to the position and advance double
+
+      for (int j=0; j< steps_per_degree * back_jitter; j++) {
+        if (spin == 1) motor->Clockwise();
+        else motor->Anticlockwise();
+      }
+    
+      for (int j=0; j< steps_per_degree * back_jitter; j++) {
+        if (spin == 1) motor->Clockwise();
+        else motor->Anticlockwise();
+        i++;
+      }
+
+
+    }
+    // advance
+    if (spin == 1) motor->Clockwise();
+    else motor->Anticlockwise();
+    i++;
+
+  }
+
+}
+
 // This will be entry point to to the work.
 void MotorStepperClass::Feed(float revolutions, MotorStepperClass *motor) {
   
   int spin = 0; // hardcode to test
   int steps = static_cast<int>(ceil( (motor->stepsPerRev/(motor->numSteps/2.0)) * revolutions));
-  //int steps = (revs < 2 ? motor->stepsPerRev : (motor->stepsPerRev) * (revs/2)); 
-  MotorStepperClass::Move(spin, steps, motor);
+  
+  MotorStepperClass::MoveWithJitter(spin, steps, motor);
+  //MotorStepperClass::Move(spin, steps, motor);
 }

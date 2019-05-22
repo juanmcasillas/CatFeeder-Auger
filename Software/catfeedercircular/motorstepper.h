@@ -61,6 +61,7 @@ class MotorStepperClass {
         static void OneRevolution(int spin, int revs, MotorStepperClass *motor);   // if (spin == 1) motor->Clockwise();
 
         // previous functions will be removed.
+        static void MoveWithJitter(int spin, int steps, MotorStepperClass *motor); // if (spin == 1) motor->Clockwise(); (do 5 steps back to avoid jamming)
         static void Feed(float revolutions, MotorStepperClass *motor);   
     protected:
 
