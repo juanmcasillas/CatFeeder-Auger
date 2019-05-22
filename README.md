@@ -628,3 +628,8 @@ CatFeeder starts to work, and move to the next slot if it have a program. Easy. 
 ![Schedule](images/config/schedule.png "Schedule")
 
 Hope you enjoy CatFeeder!
+
+
+# NOTES
+
+The auger was 33mm / 4 turns, now, is 42, 3 turns, chanfered.
