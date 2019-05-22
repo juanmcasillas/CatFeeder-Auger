@@ -28,40 +28,21 @@ void callbackFeeder(AsyncWebServerRequest *request) {
         return;
     }
 
-    if (request->url() == "/catfeeder/calibrate") {
-        String ret = CATFEEDER.Calibrate(request);
-        DEBUGLOG("callbackFeeder:/calibrate: (%s)\n",ret.c_str());
+    if (request->url() == "/catfeeder/calibrate_auger") {
+        String ret = CATFEEDER.Calibrate_Auger(request);
+        DEBUGLOG("callbackFeeder:/calibrate_auger: (%s)\n",ret.c_str());
         request->send(200, "text/plain", ret);
         return;
     }
 
-    if (request->url() == "/catfeeder/calibrate_start") {
-        String ret = CATFEEDER.Calibrate_Start(request);
-        DEBUGLOG("callbackFeeder:/calibrate_start: (%s)\n",ret.c_str());
-        request->send(200, "text/plain", ret);
-        return;
-    }
 
-    if (request->url() == "/catfeeder/calibrate_restore") {
-        String ret = CATFEEDER.Calibrate_Restore(request);
-        DEBUGLOG("callbackFeeder:/calibrate_restore: (%s)\n",ret.c_str());
-        request->send(200, "text/plain", ret);
-        return;
-    }
-
-    if (request->url() == "/catfeeder/test_moveto") {
-        String ret = CATFEEDER.Test_MoveTo(request);
-        DEBUGLOG("callbackFeeder:/test_moveto: (%s)\n",ret.c_str());
+    if (request->url() == "/catfeeder/test_auger") {
+        String ret = CATFEEDER.Test_Auger(request);
+        DEBUGLOG("callbackFeeder:/test_auger: (%s)\n",ret.c_str());
         request->send(200, "text/plain", ret);
         return;
     }    
 
-    if (request->url() == "/catfeeder/test_position") {
-        String ret = CATFEEDER.Test_Position(request);
-        DEBUGLOG("callbackFeeder:/test_position: (%s)\n",ret.c_str());
-        request->send(200, "text/plain", ret);
-        return;
-    }   
 
     if (request->url() == "/catfeeder/scheduler_config") {
         String ret = CATFEEDER.Scheduler_Config(request);

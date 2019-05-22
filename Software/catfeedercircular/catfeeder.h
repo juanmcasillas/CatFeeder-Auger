@@ -24,18 +24,15 @@
 #include "logger.h"
 #include "motorstepper.h"
 
-#define CATFEEDER_SLOTS 8
-#define CATFEEDER_PROGRAMS CATFEEDER_SLOTS-1
+// TODO: FIX the number of schedules
+#define CATFEEDER_PROGRAMS 7
 
 extern MotorStepperClass CATFEEDER_STEPPER_MOTOR;
 
 class CatFeederClass {
     public:
-        int position = 1; // to set the position of the feeder (there are put from outside, so watch out) // CONFIG
-        int test_position = 1; // the test position used to test the calibration
         int offset = 0; // the offset for the calibration process    
         String lastopen = ""; // CONFIG
-        String nextopen = ""; // CONFIG
 
     protected:
         String CATFEEDER_CONFIG_FILE =  "/catfeeder.json";
@@ -48,13 +45,9 @@ class CatFeederClass {
         String wifipassword = "";
 
         String scheduler[CATFEEDER_PROGRAMS];   // CONFIG   
-        int SLOTS = CATFEEDER_SLOTS;
         int PROGRAMS = CATFEEDER_PROGRAMS;
-        int ANGLE = abs(360 / CatFeederClass::SLOTS);
         float SCHEDULE_PERIOD = 1.0f;
         
-
-
         FS *_fs;            // ICPFS implementation
         Ticker _ticker;     // Periodic Time Dispatcher (see CheckScheduler)
 
@@ -72,11 +65,9 @@ class CatFeederClass {
 
         // exposed WWW methods (REST)
         String Status(AsyncWebServerRequest *request);
-        String Calibrate(AsyncWebServerRequest *request);
-        String Calibrate_Start(AsyncWebServerRequest *request);
-        String Calibrate_Restore(AsyncWebServerRequest *request);
-        String Test_MoveTo(AsyncWebServerRequest *request);
-        String Test_Position(AsyncWebServerRequest *request);
+        String Calibrate_Auger(AsyncWebServerRequest *request);
+        String Test_Auger(AsyncWebServerRequest *request);
+       
         String Scheduler_Config(AsyncWebServerRequest *request);
         String Scheduler_Reset(AsyncWebServerRequest *request);
         String Get_Log(AsyncWebServerRequest *request);
@@ -98,10 +89,9 @@ class CatFeederClass {
         bool LoadConfig();
 
         // helpers
-        int _pos_in_range(int pos); // configure the position inside the range (SLOTS)
 
         // motor comander
-        void _motor_moveto(int a, int b); // move the motor to slot given in pos
+        void _motor_feed(float revolutions);
         void _sort(int a[], int size);
 };
 

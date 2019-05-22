@@ -17,12 +17,7 @@
 
 <div class="content">
     <h1>Status</h1>
-    <p>Current CatFeeder position</p>
-    <div class="feeder-container">
-        <img src="" class="feeder" id="img--feeder"/>
-    </div>
-    <br/><br/>
-    <div>Last Open: <span id="lastopen"></span></div>
+    <div>Last Feed: <span id="lastopen"></span></div>
     
 </div>
 <div class="management">
@@ -54,14 +49,8 @@ function parseFeedStatus(res) {
         }
 
         obj = JSON.parse(res);
-        // set the dates
-        //for (i of [ "lastopen", "nextopen"] ) {
-            document.getElementById('lastopen').innerHTML = obj['lastopen'];
-        //}
+        document.getElementById('lastopen').innerHTML = obj['lastopen'];
         // set the image based position: fX.png
-        v = sprintf("f%d.png", obj.position);
-        document.getElementById("img--feeder").src = v;
-
         setTimeout(function () { getFeedStatus(); }, timeout*1000);
     }
 

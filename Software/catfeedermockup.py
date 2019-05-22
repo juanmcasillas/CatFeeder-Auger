@@ -1,4 +1,5 @@
 import os
+import datetime
 from flask import Flask, render_template, request
 
 app = Flask(__name__, 
@@ -148,42 +149,19 @@ def setmd5():
 @app.route('/catfeeder/status')
 def feeder_status():    
     
-    json = '{ "position": %d, "lastopen": "13/04/2019 18:33:22",  "nextopen": "13/04/2019 18:33:22" }' % (app.position+1)
-    app.position = ((app.position +1) % 8)       
+    json = '{ "lastopen": "%s" }' % '{0:%Y-%m-%d %H:%M:%S}'.format(datetime.datetime.now())
     return json
 
-@app.route('/catfeeder/test_position')
-def feeder_test_position():    
-    json = '{ "position": %d }' % (app.test_position)   
-    return json
+@app.route('/catfeeder/test_auger')
+def feeder_test_auger():
+    revolutions = request.args.get('r')
+    app.logger.debug("revolutions: %s" % revolutions )
 
-@app.route('/catfeeder/test_moveto')
-def feeder_test_moveto():    
-    s = request.args.get('s',type=int)
-    app.test_position = s
-    json = '{ "position": %d }' % (app.test_position)   
-    return json    
-
-@app.route('/catfeeder/calibrate')
-def feeder_calibrate():    
-    d = request.args.get('d')
-    s = request.args.get('s')
-    app.logger.debug("direction: %s, step: %s" % (d,s) )
-
-    # direction l counterclock (-1) r, clock (1)
-
-    mult = 1
-    if d == 'l': mult = -1
-    app.offset += float(s) * mult
-    json = '{ "offset": %d  }' % (app.offset)
+    json = '{ "status": "working" }' 
 
     return json
 
-@app.route('/catfeeder/calibrate_start')
-def feeder_calibrate_start():    
-    app.offset = 0
-    json = '{ "offset": %d  }' % (app.offset)
-    return json
+ 
 
 
 @app.route('/POSTME', methods = ['POST'])
@@ -211,7 +189,4 @@ def feeder_bot_config():
 
 
 if __name__ == '__main__':
-    app.position = 1
-    app.offset=0
-    app.test_position = 1
     app.run(debug=True, host='0.0.0.0', port=6060)

@@ -9,15 +9,18 @@ void MotorStepperClass::begin() {
     pinMode(this->motorPin2, OUTPUT);
     pinMode(this->motorPin3, OUTPUT);
     pinMode(this->motorPin4, OUTPUT);
+    this->stepCounter = 0;
 }
 
 void MotorStepperClass::Clockwise() {
+
+  this->_set_output(this->stepCounter);
+  
   this->stepCounter++;
   if (this->stepCounter >= this->numSteps) this->stepCounter = 0;
-  this->_set_output(this->stepCounter);
+
   delay(this->motorSpeed);
-
-
+  
   
 }
  
@@ -25,6 +28,7 @@ void MotorStepperClass::Anticlockwise() {
   this->stepCounter--;
   if (this->stepCounter < 0) this->stepCounter = this->numSteps - 1;
   this->_set_output(this->stepCounter);
+  
   delay(this->motorSpeed);
 
 
@@ -79,3 +83,11 @@ void MotorStepperClass::OneRevolution(int spin, int revs, MotorStepperClass *mot
   MotorStepperClass::MoveWithBack(spin, steps, motor);
 }
 
+// This will be entry point to to the work.
+void MotorStepperClass::Feed(float revolutions, MotorStepperClass *motor) {
+  
+  int spin = 0; // hardcode to test
+  int steps = static_cast<int>(ceil( (motor->stepsPerRev/(motor->numSteps/2.0)) * revolutions));
+  //int steps = (revs < 2 ? motor->stepsPerRev : (motor->stepsPerRev) * (revs/2)); 
+  MotorStepperClass::Move(spin, steps, motor);
+}

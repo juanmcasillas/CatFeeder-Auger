@@ -289,3 +289,8 @@ td a:hover {
 .stats--ta pre {
     margin: 0;
 }
+
+#revolutions {
+    font-family: helvetica, sans-serif;
+    font-size: 14;
+}

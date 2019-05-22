@@ -42,9 +42,7 @@ String CatFeederClass::begin(FS *fs) {
 // show some log info about configuration, starts, and so on (e.g. position, dates, schedules)
 void CatFeederClass::IsRunning() {
     _logger.INFO("CatFeeder is Running and Handle Requests!");
-    _logger.INFO(" CONFIG::position: %d", this->position);
     _logger.INFO(" CONFIG::lastopen: %s", this->lastopen.c_str());
-    _logger.INFO(" CONFIG::nextopen: %s", this->nextopen.c_str());
     for (int i=0; i< this->PROGRAMS; i++) {
         _logger.INFO(" CONFIG::schedule[%d]: %s", i, this->scheduler[i].c_str());
     }
@@ -56,32 +54,19 @@ void CatFeederClass::DEBUG(String s) {
     _logger.DEBUG(s.c_str());
 }
 
-// advance the slot to feed. Used now to animate the first page to test things
-int CatFeederClass::AdvanceSlot() {
-    int new_position = ((this->position +1) % 8);
-    int pre_position = this->position;
-    this->position = new_position;
-    this->_motor_moveto(pre_position, new_position);
-    this->SaveConfig();
-    this->_logger.INFO("SLOT #%d opened", new_position);
-}
-
-
 // get the status of the CatFeeder (sys_cal.html)
-String CatFeederClass::Calibrate_Start(AsyncWebServerRequest *request) {
+String CatFeederClass::Calibrate_Auger(AsyncWebServerRequest *request) {
 
 
     // TODO
     // fixed for the auger version
    
-    this->_motor_moveto(1,2);
+    //this->_motor_moveto(1,2);
 
     //
     // continue ...
 
     this->offset = 0;
-    this->position = 1; // first slot
-
     
     StaticJsonBuffer<500> jsonBuffer;
     JsonObject& root = jsonBuffer.createObject();
@@ -93,16 +78,27 @@ String CatFeederClass::Calibrate_Start(AsyncWebServerRequest *request) {
 }
 
 
-// set the position again, after testing the thing
-// return the contents to the right position
-String CatFeederClass::Calibrate_Restore(AsyncWebServerRequest *request) {
-   
-    if (this->test_position != this->position) {
-        this->_motor_moveto(this->test_position,this->position);
-        this->test_position = this->position;
-    }
+// move the feeder to the given slot CatFeeder (sys_cal.html)
+String CatFeederClass::Test_Auger(AsyncWebServerRequest *request) {
 
-    return( this->Test_Position(request) );
+    if (!request->hasArg("r")) { 
+        request->send(500, "text/plain", "BAD ARGS"); 
+        return(""); // not reached, really
+    }
+    
+    // get parameters
+    float revolutions = atof(request->arg("r").c_str());
+
+    this->_motor_feed(revolutions);
+
+
+    // return things
+    StaticJsonBuffer<500> jsonBuffer;
+    JsonObject& root = jsonBuffer.createObject();
+    root["revolutions"] = revolutions;
+    String ret;
+    root.printTo(ret);
+    return(ret);
 }
 
 
@@ -110,108 +106,11 @@ String CatFeederClass::Calibrate_Restore(AsyncWebServerRequest *request) {
 String CatFeederClass::Status(AsyncWebServerRequest *request) {
     StaticJsonBuffer<500> jsonBuffer;
     JsonObject& root = jsonBuffer.createObject();
-    root["position"] = this->position;
-    root["lastopen"] = this->lastopen;
-    root["nextopen"] = this->nextopen;
-   
+    root["lastopen"] = this->lastopen; 
     String ret;
     root.printTo(ret);
     return(ret);
 }
-
-// move the motor to ensure the calibration (sys_cal.html)
-// requires handle the motor here (next)
-String CatFeederClass::Calibrate(AsyncWebServerRequest *request) {
-    
-
-
-    if (!request->hasArg("d") || !request->hasArg("s")) { 
-        request->send(500, "text/plain", "BAD ARGS"); 
-        return(""); // not reached, really
-    }
-    
-    // get parameters
-    String d = request->arg("d");
-    int s = atoi(request->arg("s").c_str());
-
-    // direction l counterclock (-1) r, clock (1)
-    int mult = ( d  == "l" ? -1 : 1 );
-    this->offset += s * mult;
-
-    DEBUGLOG("CatFeederClass::Calibrate: s:%d, d:%s\n", s, ( mult == 1 ? "clockwise": "anticlockwise" ));
-    schedule_function(std::bind(MotorStepperClass::Move, mult, s, _motor));
-
-    /*
-    schedule_function(
-		[](s){
-            // move the motor n steps remember that we have configured the motor
-            // by default as half step, so we have to command two moves.
-
-            for (int i=0; i< s; i++) {
-                if (mult == 1) _motor.Clockwise();
-                else _motor.Anticlockwise();
-
-                DEBUGLOG("CatFeederClass::Calibrate: moving motor %s step #%d\n",
-                    ( mult == 1 ? "clockwise": "anticlockwise" ),
-                    i+1);
-            }
-		}
-		});
-    */
-
-    StaticJsonBuffer<500> jsonBuffer;
-    JsonObject& root = jsonBuffer.createObject();
-    root["offset"] = this->offset;
-    
-    String ret;
-    root.printTo(ret);
-    return(ret);
-}
-
-
-
-// move the feeder to the given slot CatFeeder (sys_cal.html)
-String CatFeederClass::Test_MoveTo(AsyncWebServerRequest *request) {
-
-    if (!request->hasArg("s")) { 
-        request->send(500, "text/plain", "BAD ARGS"); 
-        return(""); // not reached, really
-    }
-    
-    // get parameters
-    int b = atoi(request->arg("s").c_str());
-    int a = this->test_position;
-
-    // range check
-    b = this->_pos_in_range(b);
-    
-    if (a != b) {
-        this->_motor_moveto(a,b);
-        this->test_position = b;
-    }
-
-    StaticJsonBuffer<500> jsonBuffer;
-    JsonObject& root = jsonBuffer.createObject();
-    root["position"] = this->test_position;
-
-    String ret;
-    root.printTo(ret);
-    return(ret);
-}
-
-// get the test position of the CatFeeder (sys_cal.html)
-String CatFeederClass::Test_Position(AsyncWebServerRequest *request) {
-
-    StaticJsonBuffer<500> jsonBuffer;
-    JsonObject& root = jsonBuffer.createObject();
-    root["position"] = this->test_position;
-
-    String ret;
-    root.printTo(ret);
-    return(ret);
-}
-
-
 
 // scheduler functions
 String CatFeederClass::Scheduler_Config(AsyncWebServerRequest *request) {
@@ -266,12 +165,9 @@ String CatFeederClass::Scheduler_Config(AsyncWebServerRequest *request) {
 String CatFeederClass::Scheduler_Reset(AsyncWebServerRequest *request) {
 
 
-	
     // clear configuration and position
     this->_logger.INFO("Reset programs. Setting position to initial value (1)");
     for (int i=0; i< this->PROGRAMS; i++) this->scheduler[i] = "";
-    this->_motor_moveto(this->position, 1);
-    this->position = 1;
     this->lastopen = "";
   
    	this->SaveConfig();
@@ -322,9 +218,7 @@ bool CatFeederClass::SaveConfig() {
 	DynamicJsonBuffer jsonBuffer(512);
 	//StaticJsonBuffer<1024> jsonBuffer;
 	JsonObject& json = jsonBuffer.createObject();
-    json["position"] = this->position;
     json["lastopen"] = this->lastopen;
-    json["nextopen"] = this->nextopen; // deprecated.
     json["bottoken"] = this->_bot.token;
 
 	JsonArray& jsonscheduler = json.createNestedArray("scheduler");
@@ -378,18 +272,11 @@ bool CatFeederClass::LoadConfig() {
 	DEBUGLOG(temp.c_str());
 #endif
     
-    if (json.containsKey("position")) {
-        this->position = json["position"].as<int>();
-    }
 
     if (json.containsKey("lastopen")) {
         this->lastopen = json["lastopen"].as<const char *>();
     }
    
-    if (json.containsKey("nextopen")) {
-        this->nextopen = json["nextopen"].as<const char *>();
-    }
-
     if (json.containsKey("bottoken")) {
         this->_bot.token = json["bottoken"].as<const char *>();
     }
@@ -401,9 +288,7 @@ bool CatFeederClass::LoadConfig() {
     }
     
 	DEBUGLOG("CatFeederConfig Config initialized.\r\n");
-	DEBUGLOG("position:  %d\n", this->position);
     DEBUGLOG("lastopen:  %s\n", this->lastopen.c_str());
-    DEBUGLOG("nextopen:  %s\n", this->nextopen.c_str());
     DEBUGLOG("bot token: %s\n", this->_bot.token.c_str());
 
     for (int i=0; i < this->PROGRAMS; i++) {
@@ -436,7 +321,6 @@ void CatFeederClass::CheckScheduler(void *arg) {
                 // do things if matches
                 DEBUGLOG(" TICK_MATCH! #%d %s %s\n", i, mytime.c_str(), sched.c_str());
                  self->setLastOpen(sched.c_str());
-                 self->AdvanceSlot();
             }
         }
     }
@@ -537,70 +421,12 @@ bool CatFeederClass::RunBot() {
 // move the motor to the slot pos. See the 
 // current position and calculate what is the minimum route
 
-void CatFeederClass::_motor_moveto(int a, int b) {
-
-    //
-    // fix for operate the auger. Just do a number of fixed revolutions
-    //
-    
-    int spin = 0;
-    int revs = 1;
-    DEBUGLOG("CatFeederClass::Test_MoveTo (Auger): revs: %d spin:%s\n", revs, ( spin == 1 ? "clockwise": "anticlockwise" ));
-    schedule_function(std::bind(MotorStepperClass::OneRevolution, spin, revs, _motor));
+void CatFeederClass::_motor_feed(float revolutions) {
+    // haveto: anticlockwise 
+    DEBUGLOG("CatFeederClass::_motor_feed (Auger): revolutions: %f\n", revolutions);
+    schedule_function(std::bind(MotorStepperClass::Feed, revolutions, _motor));
     return;
 
-    //
-    //
-    // not reached, old version
-
-
-    int dir = 1;
-    int distance = 0;
-    int steps = 0;
-    int angle = 0;
-    int sol[3];
-    int sol_1 = abs((b - a));
-    int sol_2 = abs(((this->SLOTS-b)+a));
-    int sol_3 = abs(((this->SLOTS-a)+b));
- 
-    sol[0] = sol_1;
-    sol[1] = sol_2;
-    sol[2] = sol_3;
-
-    this->_sort(sol,3);
-    distance = sol[0];
-
-    if (distance == sol_1) dir = ( b > a ? 1  : -1 );
-    if (distance == sol_2) dir = ( b > a ? -1 :  1 );
-    if (distance == sol_3) dir = ( b > a ? -1 :  1 );
-
-    // calculate steps to do the required angle
-    angle = this->ANGLE * distance;
-    steps = abs(_motor->stepsPerRev*angle/360);
-
-    // move the motor n steps remember that we have configured the motor
-    // by default as half step, so we have to command two moves.
-
-    DEBUGLOG("CatFeederClass::_motor_moveto: %d->%d a:%d, d:%d s:%d, dr:%s\n", a,b, angle, distance, steps, ( dir == 1 ? "clockwise": "anticlockwise" ));
-    schedule_function(std::bind(MotorStepperClass::Move, dir, steps, _motor));
-
-    /*
-    schedule_function(
-            [](){
-            for (int i=0; i< steps; i++) {
-                    ( mult == 1 ? _motor.Clockwise(): _motor.Anticlockwise() );
-            }        
-        });
-    */
-    
-
-}
-
-int CatFeederClass::_pos_in_range(int pos) {
-    // range check
-    pos = (pos > this->SLOTS ? this->SLOTS: pos);
-    pos = (pos < 1 ? 1 : pos);
-    return(pos);
 }
 
 void CatFeederClass::_sort(int a[], int size) {

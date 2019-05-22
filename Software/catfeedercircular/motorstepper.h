@@ -19,8 +19,8 @@
 
 class MotorStepperClass {
     public:
-        const int stepsPerRev = 4096;  // pasos para una vuelta completa
-        //int stepsPerRev = 4076;  // pasos para una vuelta completa
+        const int stepsPerRev = 4096;  // number of steps for a full rev
+        //int stepsPerRev = 4076;  // number of steps for a full rev
     protected:
         // motor: 28BYJ48
         // driver ULN2003
@@ -30,23 +30,23 @@ class MotorStepperClass {
         const int motorPin3 = D5;   // D5  (GPIO13)      IN3     Blue  
         const int motorPin4 = D6;   // D6  (GPIO15)      IN4     Red 
         
-        int motorSpeed =  2;      // variable para fijar la velocidad milis (was 5 but with 1 phase, 2 good)
-        int stepCounter = 0;     // contador para los pasos
+        int motorSpeed =  2;      // speed in milis (was 5 but with 1 phase, 2 good)
+        int stepCounter = 0;     // step counter
         
 
-        //tablas con la secuencia de encendido (descomentar la que necesiteis)
-        //secuencia 1-fase
+    
+        //sequence 1-phase
         //less torque, less consuption
         //const int numSteps = 4;
         //const int stepsLookup[4] = { B1000, B0100, B0010, B0001 };
         
-        //secuencia 2-fases
+        //sequence 2-phase
         //max torque
         // recommended speed: 2 
         const int numSteps = 4;
         const int stepsLookup[4] = { B1100, B0110, B0011, B1001 };
         
-        //secuencia media fase
+        //sequence half-phase
         //wave. Recommended by the manufacturer. Less torque.
         //const int numSteps = 8;
         // recommended speed = 5
@@ -59,6 +59,9 @@ class MotorStepperClass {
         static void Move(int spin, int steps, MotorStepperClass *motor); // if (spin == 1) motor->Clockwise();
         static void MoveWithBack(int spin, int steps, MotorStepperClass *motor); // if (spin == 1) motor->Clockwise(); (do 5 steps back to avoid jamming)
         static void OneRevolution(int spin, int revs, MotorStepperClass *motor);   // if (spin == 1) motor->Clockwise();
+
+        // previous functions will be removed.
+        static void Feed(float revolutions, MotorStepperClass *motor);   
     protected:
 
        void _set_output(int step);
