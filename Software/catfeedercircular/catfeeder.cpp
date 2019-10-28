@@ -68,12 +68,12 @@ String CatFeederClass::Calibrate_Auger(AsyncWebServerRequest *request) {
 
     this->offset = 0;
     
-    StaticJsonBuffer<500> jsonBuffer;
-    JsonObject& root = jsonBuffer.createObject();
+    StaticJsonDocument<500> root;
+    //JsonObject& root = jsonBuffer.createObject();
     root["offset"] = this->offset;
     
     String ret;
-    root.printTo(ret);
+    serializeJson(root,ret);
     return(ret);
 }
 
@@ -93,22 +93,22 @@ String CatFeederClass::Test_Auger(AsyncWebServerRequest *request) {
 
 
     // return things
-    StaticJsonBuffer<500> jsonBuffer;
-    JsonObject& root = jsonBuffer.createObject();
+    StaticJsonDocument<500> root;
+    //JsonObject& root = jsonBuffer.createObject();
     root["revolutions"] = revolutions;
     String ret;
-    root.printTo(ret);
+    serializeJson(root,ret);
     return(ret);
 }
 
 
 // get the status of the CatFeeder (index.html)
 String CatFeederClass::Status(AsyncWebServerRequest *request) {
-    StaticJsonBuffer<500> jsonBuffer;
-    JsonObject& root = jsonBuffer.createObject();
+    StaticJsonDocument<500> root;
+    //JsonObject& root = jsonBuffer.createObject();
     root["lastopen"] = this->lastopen; 
     String ret;
-    root.printTo(ret);
+    serializeJson(root,ret);
     return(ret);
 }
 
@@ -147,16 +147,17 @@ String CatFeederClass::Scheduler_Config(AsyncWebServerRequest *request) {
     // always return the data
     // retrieve data as json
 
-    StaticJsonBuffer<500> jsonBuffer;
-    JsonObject& root = jsonBuffer.createObject();
-    JsonArray& jsonscheduler = root.createNestedArray("scheduler");
+    StaticJsonDocument<500> root;
+    //JsonObject& root = jsonBuffer.createObject();
+    JsonObject doc = root.to<JsonObject>();
+    JsonArray jsonscheduler = doc.createNestedArray("scheduler");
 	
     for (int i=0; i< this->PROGRAMS; i++) {
         jsonscheduler.add(this->scheduler[i]);
     }
 
     String ret;
-    root.printTo(ret);
+    serializeJson(root,ret);
     return(ret);
 }
 
@@ -176,16 +177,17 @@ String CatFeederClass::Scheduler_Reset(AsyncWebServerRequest *request) {
     // always return the data
     // retrieve data as json
 
-    StaticJsonBuffer<500> jsonBuffer;
-    JsonObject& root = jsonBuffer.createObject();
-    JsonArray& jsonscheduler = root.createNestedArray("scheduler");
+    StaticJsonDocument<500> v;
+    //JsonObject&  v = jsonBuffer.createObject();
+    JsonObject doc = v.to<JsonObject>();
+    JsonArray  jsonscheduler = doc.createNestedArray("scheduler");
 	
     for (int i=0; i< this->PROGRAMS; i++) {
         jsonscheduler.add(this->scheduler[i]);
     }
 
     String ret;
-    root.printTo(ret);
+    serializeJson(v,ret);
     return(ret);
 }
 
@@ -215,13 +217,14 @@ String CatFeederClass::Reset_Log(AsyncWebServerRequest *request) {
 
 bool CatFeederClass::SaveConfig() {
 
-	DynamicJsonBuffer jsonBuffer(512);
+	StaticJsonDocument<512> json;
 	//StaticJsonBuffer<1024> jsonBuffer;
-	JsonObject& json = jsonBuffer.createObject();
+	//JsonObject& json = jsonBuffer.createObject();
     json["lastopen"] = this->lastopen;
-    json["bottoken"] = this->_bot.token;
+    //json["bottoken"] = this->_bot.token;
+    JsonObject doc = json.to<JsonObject>();
 
-	JsonArray& jsonscheduler = json.createNestedArray("scheduler");
+	JsonArray jsonscheduler = doc.createNestedArray("scheduler");
     for (int i=0; i < this->PROGRAMS; i++) {
 	    jsonscheduler.add(this->scheduler[i]);
     }
@@ -235,11 +238,11 @@ bool CatFeederClass::SaveConfig() {
 
 #ifndef RELEASE
 	String temp;
-	json.prettyPrintTo(temp);
+	serializeJsonPretty(json, temp);
     DEBUGLOG(temp.c_str());
 #endif
 
-	json.printTo(configFile);
+	serializeJson(json,configFile);
 	configFile.flush();
 	configFile.close();
 	return true;
@@ -259,16 +262,17 @@ bool CatFeederClass::LoadConfig() {
 	configFile.readBytes(buf.get(), size);
 	configFile.close();
 	DEBUGLOG("JSON file size: %d bytes\r\n", size);
-	DynamicJsonBuffer jsonBuffer(1024);
-	JsonObject& json = jsonBuffer.parseObject(buf.get());
+	StaticJsonDocument<1024> json;
+	//JsonObject& json = jsonBuffer.parseObject(buf.get());
 
-	if (!json.success()) {
+    auto error = deserializeJson(json, buf.get());
+	if (error) {
 		DEBUGLOG("CatFeeder: Failed to parse config file %s\r\n", CATFEEDER_CONFIG_FILE.c_str());
 		return false;
 	}
 #ifndef RELEASE
 	String temp;
-	json.prettyPrintTo(temp);
+	serializeJsonPretty(json, temp);
 	DEBUGLOG(temp.c_str());
 #endif
     
@@ -277,9 +281,9 @@ bool CatFeederClass::LoadConfig() {
         this->lastopen = json["lastopen"].as<const char *>();
     }
    
-    if (json.containsKey("bottoken")) {
-        this->_bot.token = json["bottoken"].as<const char *>();
-    }
+    //if (json.containsKey("bottoken")) {
+    //    this->_bot.token = json["bottoken"].as<const char *>();
+    //}
 
     if (json.containsKey("scheduler")) {
         for (int i=0; i < this->PROGRAMS; i++) {
@@ -289,7 +293,7 @@ bool CatFeederClass::LoadConfig() {
     
 	DEBUGLOG("CatFeederConfig Config initialized.\r\n");
     DEBUGLOG("lastopen:  %s\n", this->lastopen.c_str());
-    DEBUGLOG("bot token: %s\n", this->_bot.token.c_str());
+    //DEBUGLOG("bot token: %s\n", this->_bot.token.c_str());
 
     for (int i=0; i < this->PROGRAMS; i++) {
         DEBUGLOG("scheduler[%d]: %s\n", i, this->scheduler[i].c_str());
@@ -369,7 +373,7 @@ String CatFeederClass::Bot_Config(AsyncWebServerRequest *request) {
         AsyncWebParameter* p = request->getParam("bottoken",true);
         DEBUGLOG("Bot Token %s = %s\r\n", p->name().c_str(), p->value().c_str());
         
-        this->_bot.Init(p->value());
+        //this->_bot.Init(p->value());
 		this->SaveConfig();
 
 		this->_logger.INFO("Configuration saved");
@@ -378,19 +382,19 @@ String CatFeederClass::Bot_Config(AsyncWebServerRequest *request) {
     // always return the data
     // retrieve data as json
 
-    StaticJsonBuffer<500> jsonBuffer;
-    JsonObject& root = jsonBuffer.createObject();
-    root["bottoken"] = this->_bot.token;
+    StaticJsonDocument<500> root;
+    //JsonObject& root = jsonBuffer.createObject();
+    root["bottoken"] = "this->_bot.token";
 
     String ret;
-    root.printTo(ret);
+    serializeJson(root,ret);
     return(ret);
 }
 
 
 // run the bot loop
 bool CatFeederClass::RunBot() {
-
+/*
     if (this->_bot.needsRun()) {
         int numNewMessages = this->_bot.getUpdates();
         while(numNewMessages) {
@@ -409,6 +413,7 @@ bool CatFeederClass::RunBot() {
 
         this->_bot.updateRun();
     }
+*/
 }
 
 

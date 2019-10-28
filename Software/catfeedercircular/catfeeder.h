@@ -20,7 +20,7 @@
 #include <FSWebServerLib.h>
 #include <Hash.h>
 
-#include "bot.h"
+//#include "bot.h"
 #include "logger.h"
 #include "motorstepper.h"
 
@@ -40,7 +40,7 @@ class CatFeederClass {
         
         MotorStepperClass *_motor = &CATFEEDER_STEPPER_MOTOR;
         LoggerClass _logger;
-        BotClass _bot;
+        //BotClass _bot;
         String wifissid = "";
         String wifipassword = "";
 
@@ -79,7 +79,7 @@ class CatFeederClass {
 
         // bot management.
         bool RunBot();
-        inline bool isBotActive() { return this->_bot.isActive(); }
+        //inline bool isBotActive() { return this->_bot.isActive(); }
 
     // internal methods used to do things
     protected:

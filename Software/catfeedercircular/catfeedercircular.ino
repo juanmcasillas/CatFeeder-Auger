@@ -60,7 +60,7 @@ void loop() {
     // DO NOT REMOVE. Attend OTA update from Arduino IDE
     ESPHTTPServer.handle();	
     
-    if (CATFEEDER.isBotActive()) {
+    /*if (CATFEEDER.isBotActive()) {
         CATFEEDER.RunBot();
-    }
+    }*/
 }

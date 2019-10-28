@@ -92,29 +92,9 @@ void MotorStepperClass::MoveWithJitter(int spin, int steps, MotorStepperClass *m
   int steps_per_degree = static_cast<int>(ceil(steps_one_revolution / 360.0)); 
 
   int MIN_DEGREE = 15;
-  int MAX_DEGREE = 35;
+  int MAX_DEGREE = 30;
 
   // motivation, go a little back, then walk, then go a little back again.
-
-  int back_degrees = 2;
-
-
-  for (int j=0; j<10; j++) {
-    // first, go back a little
-
-    for (int i=0; i< steps_per_degree * back_degrees; i++) {
-      if (spin == 1) motor->Anticlockwise();
-      else motor->Clockwise();
-    }
-
-    // return to the first position
-
-    for (int i=0; i< steps_per_degree * back_degrees; i++) {
-      if (spin == 1) motor->Clockwise();
-      else motor->Anticlockwise();
-    }
-  }
-
   // do the jitter. use back_degress to gap.
 
 
@@ -122,14 +102,12 @@ void MotorStepperClass::MoveWithJitter(int spin, int steps, MotorStepperClass *m
   int i=0;
   while (i< steps) {
 
-   
     //if (i % (back_degrees*steps_per_degree) == 0) {
-    if (random(0, 100) < 25) { 
+    if (random(0, 100) < 5) { 
 
       // ok, go back for some angles, then return, and move forward.
 
       int back_jitter = random(MIN_DEGREE,MAX_DEGREE+1);
-  
 
       for (int j=0; j< steps_per_degree * back_jitter; j++) {
         if (spin == 1) motor->Anticlockwise();
@@ -143,12 +121,13 @@ void MotorStepperClass::MoveWithJitter(int spin, int steps, MotorStepperClass *m
         else motor->Anticlockwise();
       }
     
+      // duplicate for to allow i advance
       for (int j=0; j< steps_per_degree * back_jitter; j++) {
         if (spin == 1) motor->Clockwise();
         else motor->Anticlockwise();
         i++;
       }
-
+      
 
     }
     // advance
