@@ -27,7 +27,7 @@
 // TODO: FIX the number of schedules
 #define CATFEEDER_PROGRAMS 7
 
-extern MotorStepperClass CATFEEDER_STEPPER_MOTOR;
+extern MotorServoClass CATFEEDER_MOTOR;
 
 class CatFeederClass {
     public:
@@ -38,7 +38,7 @@ class CatFeederClass {
         String CATFEEDER_CONFIG_FILE =  "/catfeeder.json";
         String LOGGER_FILE = "/catfeeder.log";
         
-        MotorStepperClass *_motor = &CATFEEDER_STEPPER_MOTOR;
+        MotorServoClass *_motor = &CATFEEDER_MOTOR;
         LoggerClass _logger;
         //BotClass _bot;
         String wifissid = "";

@@ -4,7 +4,7 @@
 
 #include "catfeeder.h"
 
- MotorStepperClass CATFEEDER_STEPPER_MOTOR;
+ MotorServoClass CATFEEDER_MOTOR;
 
 // arduino init
 String CatFeederClass::begin(FS *fs) {
@@ -429,7 +429,7 @@ bool CatFeederClass::RunBot() {
 void CatFeederClass::_motor_feed(float revolutions) {
     // haveto: anticlockwise 
     DEBUGLOG("CatFeederClass::_motor_feed (Auger): revolutions: %f\n", revolutions);
-    schedule_function(std::bind(MotorStepperClass::Feed, revolutions, _motor));
+    schedule_function(std::bind(MotorServoClass::Feed, revolutions, _motor));
     return;
 
 }
