@@ -35,6 +35,8 @@ class CatFeederClass {
         String lastopen = ""; // CONFIG
 
     protected:
+        int feed_turns = 2; 
+
         String CATFEEDER_CONFIG_FILE =  "/catfeeder.json";
         String LOGGER_FILE = "/catfeeder.log";
         
@@ -56,11 +58,13 @@ class CatFeederClass {
         void IsRunning(); // shows the start information
         void DEBUG(String s); // shows a simple trace (to test the log, remove it)
         static void CheckScheduler(void *arg); // Programmed each 1 second. Passed myself as arg.
-        int AdvanceSlot(); // advance the feeder in 1 slot
+        void DoFeed();
         
+
         inline int getPROGRAMS() { return this->PROGRAMS; }
         inline String getScheduler(int p) { return this->scheduler[p]; }
         inline void setLastOpen(String s) { this->lastopen = s; }
+        
         inline LoggerClass *getLogger() { return &this->_logger; }
 
         // exposed WWW methods (REST)

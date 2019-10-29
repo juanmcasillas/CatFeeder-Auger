@@ -34,7 +34,7 @@ String CatFeederClass::begin(FS *fs) {
     this->LoadConfig();
 
     // configure the scheduler checker. Do the things each second.
-
+ 
     _ticker.attach(this->SCHEDULE_PERIOD, &CatFeederClass::CheckScheduler, static_cast<void*>(this)); 
 
 }
@@ -221,6 +221,7 @@ bool CatFeederClass::SaveConfig() {
 	//StaticJsonBuffer<1024> jsonBuffer;
 	//JsonObject& json = jsonBuffer.createObject();
     json["lastopen"] = this->lastopen;
+    json["feed_turns"] = this->feed_turns;
     //json["bottoken"] = this->_bot.token;
     JsonObject doc = json.to<JsonObject>();
 
@@ -285,6 +286,10 @@ bool CatFeederClass::LoadConfig() {
     //    this->_bot.token = json["bottoken"].as<const char *>();
     //}
 
+        if (json.containsKey("feed_turns")) {
+        this->feed_turns = json["feed_turns"].as<int>();
+    }
+
     if (json.containsKey("scheduler")) {
         for (int i=0; i < this->PROGRAMS; i++) {
             this->scheduler[i] = json["scheduler"][i].as<const char *>();
@@ -293,6 +298,7 @@ bool CatFeederClass::LoadConfig() {
     
 	DEBUGLOG("CatFeederConfig Config initialized.\r\n");
     DEBUGLOG("lastopen:  %s\n", this->lastopen.c_str());
+    DEBUGLOG("feed_turns:  %d\n", this->feed_turns);
     //DEBUGLOG("bot token: %s\n", this->_bot.token.c_str());
 
     for (int i=0; i < this->PROGRAMS; i++) {
@@ -325,9 +331,16 @@ void CatFeederClass::CheckScheduler(void *arg) {
                 // do things if matches
                 DEBUGLOG(" TICK_MATCH! #%d %s %s\n", i, mytime.c_str(), sched.c_str());
                  self->setLastOpen(sched.c_str());
+                 self->DoFeed();
             }
         }
     }
+}
+
+void CatFeederClass::DoFeed() {
+    _motor_feed(this->feed_turns);
+    this->SaveConfig();
+    this->_logger.INFO("Feed Done");
 }
 
 // build the string just like the scheduled.

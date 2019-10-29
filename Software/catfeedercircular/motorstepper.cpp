@@ -157,7 +157,8 @@ void MotorStepperClass::Feed(float revolutions, MotorStepperClass *motor) {
 
 
 void MotorServoClass::begin() {
-  
+  this->_servo.attach(this->motorPin);
+  this->_servo.detach();
 }
 
 void MotorServoClass::Clockwise() {
@@ -180,6 +181,9 @@ void MotorServoClass::Move(int counter, int steps, MotorServoClass *motor) {
 // This will be entry point to to the work.
 void MotorServoClass::Feed(float revolutions, MotorServoClass *motor) {
   float angle = revolutions * 360;
+  
+  int direction = (angle >= 0 ? -1 : 1); // the opposite
+  motor->_turn(direction * 15); // just a little back
   motor->_turn(angle);
 }
 
@@ -201,7 +205,8 @@ void MotorServoClass::_turn(int angle) {
 // angle > 0: turn clockwise
 // angle < 0: turn anticlockwise.
   
-  int direction = (angle >= 0 ? 0 : 180);
+  // I do the metal spiral in the opposite side, so I have to change this to support "positive values"
+  int direction = (angle >= 0 ? 180 : 0);
   int angle_abs = abs(angle);
   const int d_turn = 1600;
   // The things spent 1600 seconds in a full turn (calculated, see above)
