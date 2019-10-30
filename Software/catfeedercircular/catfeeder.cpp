@@ -43,6 +43,7 @@ String CatFeederClass::begin(FS *fs) {
 void CatFeederClass::IsRunning() {
     _logger.INFO("CatFeeder is Running and Handle Requests!");
     _logger.INFO(" CONFIG::lastopen: %s", this->lastopen.c_str());
+    _logger.INFO(" CONFIG::feed_turns: %d", this->feed_turns);
     for (int i=0; i< this->PROGRAMS; i++) {
         _logger.INFO(" CONFIG::schedule[%d]: %s", i, this->scheduler[i].c_str());
     }
@@ -274,11 +275,6 @@ bool CatFeederClass::LoadConfig() {
 		DEBUGLOG("CatFeeder: Failed to parse config file %s\r\n", CATFEEDER_CONFIG_FILE.c_str());
 		return false;
 	}
-#ifndef RELEASE
-	String temp;
-	serializeJsonPretty(json, temp);
-	DEBUGLOG(temp.c_str());
-#endif
     
 
     if (json.containsKey("lastopen")) {
@@ -295,10 +291,16 @@ bool CatFeederClass::LoadConfig() {
 
     if (json.containsKey("scheduler")) {
         for (int i=0; i < this->PROGRAMS; i++) {
-            this->scheduler[i] = json["scheduler"][i].as<const char *>();
+           this->scheduler[i] = json["scheduler"][i].as<const char *>();
         }
     }
     
+#ifndef RELEASE
+	String temp;
+	serializeJsonPretty(json, temp);
+	DEBUGLOG(temp.c_str());
+#endif
+
 	DEBUGLOG("CatFeederConfig Config initialized.\r\n");
     DEBUGLOG("lastopen:  %s\n", this->lastopen.c_str());
     DEBUGLOG("feed_turns:  %d\n", this->feed_turns);
