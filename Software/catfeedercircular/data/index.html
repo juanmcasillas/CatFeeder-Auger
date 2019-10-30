@@ -23,7 +23,8 @@
 <div class="management">
 <a href="schedule.html" style="width:250px" class="btn btn--m btn--orange" >Schedule</a><br/>
 <a href="stats.html" style="width:250px" class="btn btn--m btn--orange" >Stats</a><br/>
-
+<br/>
+<a href="#" onClick="doFeed();" style="width:250px" class="btn btn--m btn--orange" >Feed</a><br/>
 <br/>
 <a href="sys.html"   style="width:250px"  class="btn btn--m btn--orange" >System Administration</a><br>
 <a href="net.html"   style="width:250px"  class="btn btn--m btn--orange" >Network Administration</a><br>
@@ -40,6 +41,12 @@
 </html>
 
 <script>
+function doFeed() {
+    var revolutions = 1.0;
+    url = sprintf("/catfeeder/test_auger?r=%s", revolutions);
+    ajax(url, 'GET', null, true, null);
+}
+
 function parseFeedStatus(res) {
         var timeout = 10; // ten seconds
 

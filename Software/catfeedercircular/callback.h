@@ -57,14 +57,7 @@ void callbackFeeder(AsyncWebServerRequest *request) {
         request->send(200, "text/plain", ret);
         return;
     } 
-
-    if (request->url() == "/catfeeder/get_log") {
-        String ret = CATFEEDER.Get_Log(request);
-        DEBUGLOG("callbackFeeder:/get_log: (...)\n");
-        request->send(200, "text/plain", ret);
-        return;
-    } 
-      
+     
     if (request->url() == "/catfeeder/reset_log") {
         String ret = CATFEEDER.Reset_Log(request);
         DEBUGLOG("callbackFeeder:/reset_log: (%s)\n",ret.c_str());

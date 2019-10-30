@@ -45,7 +45,7 @@ void setup() {
     // configure the logger to be served statically
     // maybe all the static elements in the directory
     // should be handled in this way.
-    ESPHTTPServer.serveStatic("/catfeeder.log", SPIFFS, "/catfeeder.log");
+    // ESPHTTPServer.serveStatic("/catfeeder.log", SPIFFS, "/catfeeder.log");
 
 
     CATFEEDER.IsRunning();

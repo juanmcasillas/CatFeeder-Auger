@@ -132,7 +132,7 @@ String CatFeederClass::Scheduler_Config(AsyncWebServerRequest *request) {
                 this->scheduler[ptr] = p->value();
                 ptr++;
                 if (ptr > this->PROGRAMS) break;
-                DEBUGLOG("Arg %d: %s = %s\r\n", i, p->name().c_str(), p->value().c_str());
+                //DEBUGLOG("Arg %d: %s = %s\r\n", i, p->name().c_str(), p->value().c_str());
                 this->_logger.INFO("Program #%d: %s", i, p->value().c_str());
             }
 		}
@@ -221,7 +221,7 @@ bool CatFeederClass::SaveConfig() {
 	//StaticJsonBuffer<1024> jsonBuffer;
 	//JsonObject& json = jsonBuffer.createObject();
     json["lastopen"] = this->lastopen;
-    json["feed_turns"] = this->feed_turns;
+    json["feed_turns"] = this->feed_turns;    
     //json["bottoken"] = this->_bot.token;
     JsonObject doc = json.to<JsonObject>();
 
@@ -236,6 +236,9 @@ bool CatFeederClass::SaveConfig() {
 		configFile.close();
 		return false;
 	}
+
+
+
 
 #ifndef RELEASE
 	String temp;

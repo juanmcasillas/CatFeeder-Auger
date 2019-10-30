@@ -22,7 +22,7 @@
 
 //#include "bot.h"
 #include "logger.h"
-#include "motorstepper.h"
+#include "motor.h"
 
 // TODO: FIX the number of schedules
 #define CATFEEDER_PROGRAMS 7
@@ -35,7 +35,7 @@ class CatFeederClass {
         String lastopen = ""; // CONFIG
 
     protected:
-        int feed_turns = 2; 
+        int feed_turns = 4;  // about the meat for Miki (see the gauge)
 
         String CATFEEDER_CONFIG_FILE =  "/catfeeder.json";
         String LOGGER_FILE = "/catfeeder.log";
